@@ -48,6 +48,8 @@ import math
 import theano
 import theano.tensor as T
 
+from mpl_toolkits.mplot3d import Axes3D
+import matplotlib.pyplot as plt
 
 class LogisticRegression(object):
     """Multi-class Logistic Regression Class
@@ -429,27 +431,28 @@ def mat_load_data(dataset_path):
     index1 = numpy.random.permutation(trial_num1)
     train_index1 = index1[0:num_train]
     valid_index1 = index1[num_train:num_train + num_valid]
-    test_index1 = index1[num_test1 - 1:]
+    test_index1 = index1[-num_test1:] # to fix it
     index2 = numpy.random.permutation(trial_num2)
     train_index2 = index2[0:num_train]
     valid_index2 = index2[num_train:num_train + num_valid]
-    test_index2 = index2[num_test2 - 1:]
+    test_index2 = index2[-num_test2:]
     index3 = numpy.random.permutation(trial_num3)
     train_index3 = index3[0:num_train]
     valid_index3 = index3[num_train:num_train + num_valid]
-    test_index3 = index3[num_test3 - 1:]
+    test_index3 = index3[-num_test3:]
+
 
     train_set_label = numpy.array(
-        list(numpy.ones(num_train, dtype=numpy.int64)) + list(2 * numpy.ones(num_train, dtype=numpy.int64)) \
-        + list(3 * numpy.ones(num_train, dtype=numpy.int64)))
+        list(numpy.zeros(num_train, dtype=numpy.int64)) + list(numpy.ones(num_train, dtype=numpy.int64)) \
+        + list(2 * numpy.ones(num_train, dtype=numpy.int64)))
 
     valid_set_label = numpy.array(
-        list(numpy.ones(num_valid, dtype=numpy.int64)) + list(2 * numpy.ones(num_valid, dtype=numpy.int64)) \
-        + list(3 * numpy.ones(num_valid, dtype=numpy.int64)))
+        list(numpy.zeros(num_valid, dtype=numpy.int64)) + list(numpy.ones(num_valid, dtype=numpy.int64)) \
+        + list(2 * numpy.ones(num_valid, dtype=numpy.int64)))
 
     test_set_label = numpy.array(
-        list(numpy.ones(num_test1, dtype=numpy.int64)) + list(2 * numpy.ones(num_test2, dtype=numpy.int64)) \
-        + list(3 * numpy.ones(num_test3, dtype=numpy.int64)))
+        list(numpy.zeros(num_test1, dtype=numpy.int64)) + list(numpy.ones(num_test2, dtype=numpy.int64)) \
+        + list(2 * numpy.ones(num_test3, dtype=numpy.int64)))
 
     train_set_data = numpy.concatenate(
         (feature1[train_index1, :], feature2[train_index2, :], feature3[train_index3, :]), 0)
@@ -457,6 +460,42 @@ def mat_load_data(dataset_path):
         (feature1[valid_index1, :], feature2[valid_index2, :], feature3[valid_index3, :]), 0)
     test_set_data = numpy.concatenate(
         (feature1[test_index1, :], feature2[test_index2, :], feature3[test_index3, :]), 0)
+
+    ##############plot to verify correct import
+    fig = plt.figure()
+    ax = fig.add_subplot(111, projection='3d')
+
+    for p_index in range(num_valid):
+        ax.scatter(valid_set_data[p_index, 0], valid_set_data[p_index, 1], valid_set_data[p_index, 2], c='b', marker="^")
+
+    for p_index in range(num_valid, 2 * num_valid):
+        ax.scatter(valid_set_data[p_index, 0], valid_set_data[p_index, 1], valid_set_data[p_index, 2], c='r', marker="o")
+
+    for p_index in range(2 * num_valid, 3*num_valid):
+        ax.scatter(valid_set_data[p_index, 0], valid_set_data[p_index, 1], valid_set_data[p_index, 2], c='y', marker="h")
+
+    ax.set_xlabel('X Label')
+    ax.set_ylabel('Y Label')
+    ax.set_zlabel('Z Label')
+
+    plt.show()
+
+    ####################################################
+
+    train_shuffle_index = numpy.random.permutation(train_set_data.shape[0])
+    train_set_data = train_set_data[train_shuffle_index, :]
+    train_set_data *= 1000
+    train_set_label = train_set_label[train_shuffle_index]
+
+    valid_shuffle_index = numpy.random.permutation(valid_set_data.shape[0])
+    valid_set_data = valid_set_data[valid_shuffle_index, :]
+    valid_set_data *= 1000
+    valid_set_label = valid_set_label[valid_shuffle_index]
+
+    test_shuffle_index = numpy.random.permutation(test_set_data.shape[0])
+    test_set_data = test_set_data[test_shuffle_index, :]
+    test_set_data *= 1000
+    test_set_label = test_set_label[test_shuffle_index]
     #train_set = [train_set_data, train_set_label]
     #valid_set = [valid_set_data, valid_set_label]
     #test_set = [test_set_data, test_set_label]
