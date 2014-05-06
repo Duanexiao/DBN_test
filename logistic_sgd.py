@@ -415,9 +415,31 @@ def mat_load_data(dataset_path):
     feature1 = mat_dataset['EEG_feature1']
     feature2 = mat_dataset['EEG_feature2']
     feature3 = mat_dataset['EEG_feature3']
+
     trial_num1, feat_dim1 = feature1.shape
     trial_num2, feat_dim2 = feature2.shape
     trial_num3, feat_dim3 = feature3.shape
+
+    # normalize to zero-mean and unit variance
+    feature_all = numpy.concatenate((feature1, feature2, feature3), axis=0)
+    feature_mean = numpy.mean(feature_all, axis=0)
+
+    feature1 = feature1 - numpy.tile(feature_mean, (trial_num1, 1))
+    feature2 = feature2 - numpy.tile(feature_mean, (trial_num2, 1))
+    feature3 = feature3 - numpy.tile(feature_mean, (trial_num3, 1))
+
+    feature_std = numpy.std(feature_all, axis=0)
+    feature_invstd = numpy.diag(1/feature_std)
+    feature1 = numpy.dot(feature1, feature_invstd)
+    feature2 = numpy.dot(feature2, feature_invstd)
+    feature3 = numpy.dot(feature3, feature_invstd)
+
+    feature_all = numpy.concatenate((feature1, feature2, feature3), axis=0)
+    print numpy.mean(feature_all, axis=0)
+    print numpy.std(feature_all, axis=0)
+
+
+
 
     if (feat_dim1 != feat_dim2) or (feat_dim2 != feat_dim3) or (feat_dim1 != feat_dim3):
         print 'feature dimensions do not match'

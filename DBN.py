@@ -15,6 +15,7 @@ from theano.tensor.shared_randomstreams import RandomStreams
 from logistic_sgd import LogisticRegression, mat_load_data
 from mlp import HiddenLayer
 from rbm import RBM
+from grbm import GBRBM
 
 
 class DBN(object):
@@ -111,14 +112,27 @@ class DBN(object):
             # of the DBN.
             self.params.extend(sigmoid_layer.params)
 
+            # The first visible layer is Gaussian Bernoulli RBM
+            # The other hidden layers are RBM
             # Construct an RBM that shared weights with this layer
-            rbm_layer = RBM(numpy_rng=numpy_rng,
+
+            if i == 0:
+                rbm_layer = GBRBM(numpy_rng=numpy_rng,
+                            theano_rng=theano_rng,
+                            input=layer_input,
+                            n_in=input_size,
+                            n_hidden=hidden_layers_sizes[i],
+                            W=sigmoid_layer.W,
+                            hbias=sigmoid_layer.b)
+            else:
+                rbm_layer = RBM(numpy_rng=numpy_rng,
                             theano_rng=theano_rng,
                             input=layer_input,
                             n_visible=input_size,
                             n_hidden=hidden_layers_sizes[i],
                             W=sigmoid_layer.W,
                             hbias=sigmoid_layer.b)
+
             self.rbm_layers.append(rbm_layer)
 
         # We now need to add a logistic layer on top of the MLP
@@ -255,9 +269,9 @@ class DBN(object):
         return train_fn, valid_score, test_score
 
 
-def test_DBN(finetune_lr=0.01, pretraining_epochs=100,
-             pretrain_lr=0.1, k=1, training_epochs=10000,
-             dataset='./EEG_feature_4.mat', batch_size=25):
+def test_DBN(finetune_lr=0.1, pretraining_epochs=500,
+             pretrain_lr=0.002, k=1, training_epochs=1000,
+             dataset='./EEG_feature_20.mat', batch_size=25):
     """
     Demonstrates how to train and test a Deep Belief Network.
 
@@ -292,8 +306,8 @@ def test_DBN(finetune_lr=0.01, pretraining_epochs=100,
     numpy_rng = numpy.random.RandomState(123)
     print '... building the model'
     # construct the Deep Belief Network
-    dbn = DBN(numpy_rng=numpy_rng, n_ins=4,
-              hidden_layers_sizes=[15, 15],
+    dbn = DBN(numpy_rng=numpy_rng, n_ins=20,
+              hidden_layers_sizes=[100, 100, 30],
               n_outs=3)
 
     #########################
@@ -335,12 +349,12 @@ def test_DBN(finetune_lr=0.01, pretraining_epochs=100,
 
     print '... finetunning the model'
     # early-stopping parameters
-    patience = 40 * n_train_batches  # look as this many examples regardless
-    patience_increase = 200   # wait this much longer when a new best is
+    patience = 4 * n_train_batches  # look as this many examples regardless
+    patience_increase = 2   # wait this much longer when a new best is
                               # found
     improvement_threshold = 0.995  # a relative improvement of this much is
                                    # considered significant
-    validation_frequency = 3 * min(n_train_batches, patience / 2)
+    validation_frequency = min(n_train_batches, patience / 2)
                                   # go through this many
                                   # minibatche before checking the network
                                   # on the validation set; in this case we
