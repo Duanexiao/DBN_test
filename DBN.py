@@ -269,8 +269,8 @@ class DBN(object):
         return train_fn, valid_score, test_score
 
 
-def test_DBN(finetune_lr=0.1, pretraining_epochs=500,
-             pretrain_lr=0.002, k=1, training_epochs=1000,
+def test_DBN(finetune_lr=0.01, pretraining_epochs=500,
+             pretrain_lr=0.001, k=1, training_epochs=1000,
              dataset='./EEG_feature_20.mat', batch_size=25):
     """
     Demonstrates how to train and test a Deep Belief Network.
@@ -307,7 +307,7 @@ def test_DBN(finetune_lr=0.1, pretraining_epochs=500,
     print '... building the model'
     # construct the Deep Belief Network
     dbn = DBN(numpy_rng=numpy_rng, n_ins=20,
-              hidden_layers_sizes=[100, 100, 30],
+              hidden_layers_sizes=[40, 200, 40],
               n_outs=3)
 
     #########################
