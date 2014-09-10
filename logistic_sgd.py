@@ -395,6 +395,33 @@ def mat_load_data(dataset_path):
     #############
 
     # Download the MNIST dataset if it is not present
+    mat_dataset = sio.loadmat(dataset_path)
+    print '... loading data'
+    kalfeature_train = mat_dataset['kalfeature_train']
+    kalfeature_valid = mat_dataset['kalfeature_test']
+    kalfeature_test = mat_dataset['feature_test']
+
+    trial_train, feat_dim = kalfeature_train.shape
+    trial_valid = kalfeature_valid.shape[0]
+    trial_test = kalfeature_test.shape[0]
+
+    kalfeature_mean = numpy.mean(kalfeature_train, axis=0)
+    kalfeature_train = kalfeature_train - numpy.tile(kalfeature_mean, (trial_train, 1))
+    kalfeature_valid = kalfeature_valid - numpy.tile(kalfeature_mean, (trial_valid, 1))
+    kalfeature_test = kalfeature_test - numpy.tile(kalfeature_mean, (trial_test, 1))
+
+    kalfeature_std = numpy.std(kalfeature_train, axis=0)
+    kalfeature_invstd = numpy.diag(1/kalfeature_std)
+    kalfeature_train = numpy.dot(kalfeature_train, kalfeature_invstd)
+    kalfeature_valid = numpy.dot(kalfeature_valid, kalfeature_invstd)
+    kalfeature_test = numpy.dot(kalfeature_test, kalfeature_invstd)
+
+    label_train = numpy.squeeze(mat_dataset['labels_train']-1)
+    label_valid = numpy.squeeze(mat_dataset['labels_test']-1)
+    label_test = numpy.squeeze(mat_dataset['labels_test_AR']-1)
+
+
+
     '''
     data_dir, data_file = os.path.split(dataset)
     if data_dir == "" and not os.path.isfile(dataset):
@@ -408,7 +435,7 @@ def mat_load_data(dataset_path):
         origin = 'http://www.iro.umontreal.ca/~lisa/deep/data/mnist/mnist.pkl.gz'
         print 'Downloading data from %s' % origin
         urllib.urlretrieve(origin, dataset)
-    '''
+
 
     mat_dataset = sio.loadmat(dataset_path)
     print '... loading data'
@@ -521,7 +548,7 @@ def mat_load_data(dataset_path):
     #train_set = [train_set_data, train_set_label]
     #valid_set = [valid_set_data, valid_set_label]
     #test_set = [test_set_data, test_set_label]
-
+    '''
     '''
     # Load the dataset
     f = gzip.open(dataset, 'rb')
@@ -562,9 +589,9 @@ def mat_load_data(dataset_path):
         # lets ous get around this issue
         return shared_x, T.cast(shared_y, 'int32')
 
-    test_set_x, test_set_y = shared_dataset(test_set_data, test_set_label)
-    valid_set_x, valid_set_y = shared_dataset(valid_set_data, valid_set_label)
-    train_set_x, train_set_y = shared_dataset(train_set_data, train_set_label)
+    train_set_x, train_set_y = shared_dataset(kalfeature_train, label_train)
+    valid_set_x, valid_set_y = shared_dataset(kalfeature_valid, label_valid)
+    test_set_x, test_set_y = shared_dataset(kalfeature_test, label_test)
 
     rval = [(train_set_x, train_set_y), (valid_set_x, valid_set_y),
             (test_set_x, test_set_y)]

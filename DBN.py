@@ -241,22 +241,16 @@ class DBN(object):
         train_fn = theano.function(inputs=[index],
               outputs=self.finetune_cost,
               updates=updates,
-              givens={self.x: train_set_x[index * batch_size:
-                                          (index + 1) * batch_size],
-                      self.y: train_set_y[index * batch_size:
-                                          (index + 1) * batch_size]})
+              givens={self.x: train_set_x[index * batch_size:(index + 1) * batch_size],
+                      self.y: train_set_y[index * batch_size:(index + 1) * batch_size]})
 
         test_score_i = theano.function([index], self.errors,
-                 givens={self.x: test_set_x[index * batch_size:
-                                            (index + 1) * batch_size],
-                         self.y: test_set_y[index * batch_size:
-                                            (index + 1) * batch_size]})
+              givens={self.x: test_set_x[index * batch_size:(index + 1) * batch_size],
+                         self.y: test_set_y[index * batch_size:(index + 1) * batch_size]})
 
         valid_score_i = theano.function([index], self.errors,
-              givens={self.x: valid_set_x[index * batch_size:
-                                          (index + 1) * batch_size],
-                      self.y: valid_set_y[index * batch_size:
-                                          (index + 1) * batch_size]})
+              givens={self.x: valid_set_x[index * batch_size:(index + 1) * batch_size],
+                      self.y: valid_set_y[index * batch_size:(index + 1) * batch_size]})
 
         # Create a function that scans the entire validation set
         def valid_score():
@@ -269,9 +263,9 @@ class DBN(object):
         return train_fn, valid_score, test_score
 
 
-def test_DBN(finetune_lr=0.01, pretraining_epochs=500,
-             pretrain_lr=0.001, k=1, training_epochs=1000,
-             dataset='./EEG_feature_20.mat', batch_size=25):
+def test_DBN(finetune_lr=0.01, pretraining_epochs=50,
+             pretrain_lr=0.0001, k=1, training_epochs=1000,
+             dataset='./Kalman_Feature_Python.mat', batch_size=50):
     """
     Demonstrates how to train and test a Deep Belief Network.
 
@@ -306,9 +300,9 @@ def test_DBN(finetune_lr=0.01, pretraining_epochs=500,
     numpy_rng = numpy.random.RandomState(123)
     print '... building the model'
     # construct the Deep Belief Network
-    dbn = DBN(numpy_rng=numpy_rng, n_ins=20,
-              hidden_layers_sizes=[40, 200, 40],
-              n_outs=3)
+    dbn = DBN(numpy_rng=numpy_rng, n_ins=32,
+              hidden_layers_sizes=[32, 200, 200, 40],
+              n_outs=20)
 
     #########################
     # PRETRAINING THE MODEL #
