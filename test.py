@@ -10,7 +10,7 @@ import logistic_cg
 import logistic_sgd
 import mlp
 import rbm
-import rnnrbm
+#import rnnrbm
 import SdA
 
 
@@ -53,8 +53,8 @@ def test_rbm():
                  n_hidden=20, output_folder='tmp_rbm_plots')
 
 
-def test_rnnrbm():
-    rnnrbm.test_rnnrbm(num_epochs=1)
+#def test_rnnrbm():
+#    rnnrbm.test_rnnrbm(num_epochs=1)
 
 
 def speed():
@@ -63,7 +63,7 @@ def speed():
     """
 
     algo = ['logistic_sgd', 'logistic_cg', 'mlp', 'convolutional_mlp',
-            'dA', 'SdA', 'DBN', 'rbm', 'rnnrbm']
+            'dA', 'SdA', 'DBN', 'rbm']
     to_exec = [True] * len(algo)
 #    to_exec = [False] * len(algo)
 #    to_exec[-1] = True
@@ -138,7 +138,7 @@ def speed():
                   training_epochs=2, batch_size=300)
         time_test(m, l, 7, rbm.test_rbm, training_epochs=1, batch_size=300,
                   n_chains=1, n_samples=1, output_folder='tmp_rbm_plots')
-        time_test(m, l, 8, rnnrbm.test_rnnrbm, num_epochs=1)
+        #time_test(m, l, 8, rnnrbm.test_rnnrbm, num_epochs=1)
         return numpy.asarray(l)
 
     #test in float64 in FAST_RUN mode on the cpu
